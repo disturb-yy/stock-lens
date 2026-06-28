@@ -1,0 +1,36 @@
+# Local editor and workspace files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Local agent/session metadata
+.agents/
+.codex/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+configs/*.local.yaml
+configs/*.local.yml
+
+# Go build outputs
+/bin/
+/dist/
+/tmp/
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Project binaries
+/stock-lens
+/server
+
+# Logs
+*.log
