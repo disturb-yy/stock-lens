@@ -11,3 +11,11 @@ Chinese translation directories mirror their English document locations:
 - `domain/market/*.md` -> `domain/market/zh/*.md`
 
 Note: do not read the project's Chinese documentation when gathering project context or deciding what to change. Use the English documentation as the source, then write the Chinese translation to match it.
+
+## Root Documentation
+
+The root `README.md` is user-facing Chinese documentation. Models and automation agents must not read the root `README.md` for project context.
+
+Use the root `INDEX.md` as the model-facing project entry point.
+
+When modifying the root `INDEX.md`, update the root `README.md` in the same change so user-facing documentation stays aligned.

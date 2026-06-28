@@ -1,68 +1,68 @@
 # Stock Lens
 
-Stock Lens is a Phase 1 market-data backend foundation for A-share stock data. It synchronizes stock master data, trade calendars, and raw unadjusted daily K lines, then exposes stable query and sync-task APIs.
+Stock Lens 是 A 股市场数据后端底座。第一阶段目标是同步、存储和查询股票主数据、交易日历、原始不复权日 K，并提供稳定的查询 API 与同步任务 API。
 
-## Current Scope
+## 当前范围
 
-Phase 1 focuses on:
+第一阶段聚焦：
 
-- A-share stock master data sync
-- A-share trade calendar sync
-- raw unadjusted daily K line sync
-- stock list and stock detail queries
-- daily K line and latest daily K line queries
-- sync task and sync log queries
-- health checks and enum metadata
+- A 股股票主数据同步
+- A 股交易日历同步
+- 原始不复权日 K 同步
+- 股票列表和股票详情查询
+- 日 K 和最新日 K 查询
+- 同步任务和同步日志查询
+- 健康检查和枚举元数据
 
-Phase 1 does not include frontend pages, user login, RBAC, watchlists, alerts, technical indicators, AI analysis, backtesting, real-time data, scheduled sync, or distributed task execution.
+第一阶段不包含前端页面、用户登录、RBAC、自选股、告警、技术指标、AI 分析、回测、实时数据、定时同步或分布式任务执行。
 
-## Runtime Defaults
+## 运行时默认值
 
-Default local server:
+默认本地服务：
 
 ```text
 http://localhost:30078
 ```
 
-Health endpoints:
+健康检查端点：
 
 ```text
 GET /healthz
 GET /readyz
 ```
 
-`/healthz` means the HTTP process is alive. `/readyz` means the service is ready, including required startup validation and MySQL connectivity.
+`/healthz` 表示 HTTP 进程存活。`/readyz` 表示服务已经就绪，包括必要的启动校验和 MySQL 连通性。
 
-API prefix:
+API 前缀：
 
 ```text
 /api/v1
 ```
 
-Market API prefix:
+Market API 前缀：
 
 ```text
 /api/v1/market
 ```
 
-## Configuration
+## 配置
 
-The implementation should use explicit configuration for:
+实现应使用显式配置：
 
-- server address and port, defaulting to `30078`
-- business timezone, defaulting to `Asia/Shanghai`
-- MySQL connection settings
-- Admin Token for sync APIs
-- market provider, `mock` or `tushare`
-- Tushare token and base URL when using the Tushare provider
-- sync batch size
-- log level
+- server 地址和端口，默认 `30078`
+- 业务时区，默认 `Asia/Shanghai`
+- MySQL 连接设置
+- 用于同步 API 的 Admin Token
+- market provider，`mock` 或 `tushare`
+- 使用 Tushare provider 时的 Tushare token 和 base URL
+- 同步批大小
+- 日志级别
 
-Mock provider mode can run without a Tushare token. Tushare provider mode requires a Tushare token.
+Mock provider 模式可以在没有 Tushare token 的情况下运行。Tushare provider 模式要求提供 Tushare token。
 
-## Main APIs
+## 主要 API
 
-Read APIs:
+读取 API：
 
 ```text
 GET /api/v1/market/stocks
@@ -75,7 +75,7 @@ GET /api/v1/market/trade-calendars/is-open
 GET /api/v1/market/meta/enums
 ```
 
-Sync APIs require Admin Token:
+同步 API 需要 Admin Token：
 
 ```text
 POST /api/v1/market/sync/stocks
@@ -85,32 +85,33 @@ GET  /api/v1/market/sync/tasks/{task_uid}
 GET  /api/v1/market/sync/tasks/{task_uid}/logs
 ```
 
-## Testing
+## 测试
 
-Use fast unit tests as the default test suite:
+默认测试套件使用快速单元测试：
 
 ```sh
 go test ./...
 ```
 
-Unit tests should prefer table-driven style and the smallest useful test scope.
+单元测试应优先使用表格驱动写法，并选择最小有用测试范围。
 
-Tests that rely on `gomonkey` may need inlining disabled:
+依赖 `gomonkey` 的测试可能需要关闭内联：
 
 ```sh
 go test ./... -gcflags=all="-N -l"
 ```
 
-Do not disable inlining for default test runs unless the specific test flow requires monkey patching.
+除非特定测试流程确实需要 monkey patch，否则默认测试运行不要关闭内联。
 
-Repository integration tests, when added, should use the `integration` build tag.
+Repository 集成测试添加后，应使用 `integration` build tag。
 
-## Documentation
+## 文档
 
-English documentation is the source of truth. Chinese documents under `zh/` directories are translation mirrors and should be updated whenever the corresponding English document changes.
+根目录 `README.md` 面向用户阅读。模型和自动化助手应读取根目录 `INDEX.md` 作为项目入口。
 
-Key documents:
+关键文档：
 
+- `INDEX.md`
 - `specs/phase1-strategy.md`
 - `specs/api-contract-decisions.md`
 - `specs/phase1-table-structure.md`
