@@ -65,7 +65,7 @@ func TestTushareCalendarProviderMapsTradeCalendars(t *testing.T) {
 		Code: 0,
 		Data: tushare.Data{
 			Fields: tushare.TradeCalFields(),
-			Items:  [][]string{{"SSE", "20260630", "1", "20260629"}},
+			Items:  rawStringItems([]string{"SSE", "20260630", "1", "20260629"}),
 		},
 	})
 
@@ -91,9 +91,9 @@ func TestTushareMarketDataProviderMapsDailyKLines(t *testing.T) {
 		Code: 0,
 		Data: tushare.Data{
 			Fields: tushare.DailyFields(),
-			Items: [][]string{{
+			Items: rawStringItems([]string{
 				"600519.SH", "20260630", "10.1", "11.2", "9.3", "10.8", "10.0", "0.8", "8.0", "123.4", "567.8",
-			}},
+			}),
 		},
 	})
 
@@ -143,7 +143,7 @@ func TestTushareInstrumentProviderFailsWhenAllStockBasicTSCodeInvalid(t *testing
 		Code: 0,
 		Data: tushare.Data{
 			Fields: tushare.StockBasicFields(),
-			Items:  [][]string{{"bad", "", "", "", "", "", "", "L"}},
+			Items:  rawStringItems([]string{"bad", "", "", "", "", "", "", "L"}),
 		},
 	})
 
@@ -194,7 +194,7 @@ func newTushareStockBasicTestClient(t *testing.T, itemsByStatus map[string][][]s
 			Code: 0,
 			Data: tushare.Data{
 				Fields: tushare.StockBasicFields(),
-				Items:  itemsByStatus[status],
+				Items:  rawStringRows(itemsByStatus[status]),
 			},
 		}); err != nil {
 			t.Fatalf("encode response: %v", err)
@@ -202,6 +202,30 @@ func newTushareStockBasicTestClient(t *testing.T, itemsByStatus map[string][][]s
 	}))
 	t.Cleanup(server.Close)
 	return tushare.NewClient(server.URL, "secret-token")
+}
+
+func rawStringRows(rows [][]string) [][]json.RawMessage {
+	items := make([][]json.RawMessage, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, rawStringItems(row)[0])
+	}
+	return items
+}
+
+func rawStringItems(rows ...[]string) [][]json.RawMessage {
+	items := make([][]json.RawMessage, 0, len(rows))
+	for _, row := range rows {
+		item := make([]json.RawMessage, 0, len(row))
+		for _, value := range row {
+			raw, err := json.Marshal(value)
+			if err != nil {
+				panic(err)
+			}
+			item = append(item, raw)
+		}
+		items = append(items, item)
+	}
+	return items
 }
 
 func decimalFromString(t *testing.T, value string) decimal.Decimal {

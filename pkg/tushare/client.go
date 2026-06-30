@@ -34,8 +34,8 @@ type Response struct {
 }
 
 type Data struct {
-	Fields []string   `json:"fields"`
-	Items  [][]string `json:"items"`
+	Fields []string            `json:"fields"`
+	Items  [][]json.RawMessage `json:"items"`
 }
 
 func NewClient(baseURL string, token string, options ...Option) *Client {
@@ -107,11 +107,23 @@ func Rows(resp Response) []map[string]string {
 				row[field] = ""
 				continue
 			}
-			row[field] = item[i]
+			row[field] = rawValueString(item[i])
 		}
 		rows = append(rows, row)
 	}
 	return rows
+}
+
+func rawValueString(value json.RawMessage) string {
+	if len(value) == 0 || string(value) == "null" {
+		return ""
+	}
+	var text string
+	if err := json.Unmarshal(value, &text); err == nil {
+		return text
+	}
+	// Tushare 的 items 单元格有时是数字或布尔值，保留原始 JSON 文本可避免精度和格式变化。
+	return strings.TrimSpace(string(value))
 }
 
 func StockBasicFields() []string {

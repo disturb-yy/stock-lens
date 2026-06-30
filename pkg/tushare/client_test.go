@@ -39,7 +39,7 @@ func TestRowsMapsFieldsToItems(t *testing.T) {
 	got := Rows(Response{
 		Data: Data{
 			Fields: []string{"ts_code", "name", "missing"},
-			Items:  [][]string{{"600519.SH", "Kweichow Moutai"}},
+			Items:  rawItems([]any{"600519.SH", "Kweichow Moutai"}),
 		},
 	})
 
@@ -49,4 +49,36 @@ func TestRowsMapsFieldsToItems(t *testing.T) {
 	if got[0]["ts_code"] != "600519.SH" || got[0]["missing"] != "" {
 		t.Fatalf("row = %+v, want mapped row with empty missing field", got[0])
 	}
+}
+
+func TestRowsConvertsMixedTushareItemTypes(t *testing.T) {
+	got := Rows(Response{
+		Data: Data{
+			Fields: []string{"exchange", "cal_date", "is_open", "pretrade_date", "empty"},
+			Items:  rawItems([]any{"SSE", 20260630, 1, nil, true}),
+		},
+	})
+
+	if len(got) != 1 {
+		t.Fatalf("len(rows) = %d, want 1", len(got))
+	}
+	if got[0]["exchange"] != "SSE" || got[0]["cal_date"] != "20260630" || got[0]["is_open"] != "1" || got[0]["pretrade_date"] != "" || got[0]["empty"] != "true" {
+		t.Fatalf("row = %+v, want mixed values converted to strings", got[0])
+	}
+}
+
+func rawItems(items ...[]any) [][]json.RawMessage {
+	rows := make([][]json.RawMessage, 0, len(items))
+	for _, item := range items {
+		row := make([]json.RawMessage, 0, len(item))
+		for _, value := range item {
+			raw, err := json.Marshal(value)
+			if err != nil {
+				panic(err)
+			}
+			row = append(row, raw)
+		}
+		rows = append(rows, row)
+	}
+	return rows
 }
