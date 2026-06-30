@@ -1,122 +1,63 @@
-# Stock Lens
+# Stock Lens 第一阶段
 
-Stock Lens 是第一阶段 A 股市场数据后端底座。它同步股票主数据、交易日历和原始不复权日 K，并提供稳定的查询 API 和同步任务 API。
+Stock Lens 第一阶段是面向 A 股数据的行情数据后端底座。它提供配置驱动的运行时启动、MySQL 持久化、行情数据同步任务，以及 `/api/v1/market` 查询 API。
 
-## 当前范围
+## 本地运行
 
-第一阶段聚焦：
-
-- A 股股票主数据同步
-- A 股交易日历同步
-- 原始不复权日 K 同步
-- 股票列表和股票详情查询
-- 日 K 和最新日 K 查询
-- 同步任务和同步日志查询
-- 健康检查和枚举元数据
-
-第一阶段不包含前端页面、用户登录、RBAC、自选股、告警、技术指标、AI 分析、回测、实时数据、定时同步或分布式任务执行。
-
-## 运行时默认值
-
-默认本地服务：
-
-```text
-http://localhost:30078
-```
-
-健康检查端点：
-
-```text
-GET /healthz
-GET /readyz
-```
-
-`/healthz` 表示 HTTP 进程存活。`/readyz` 表示服务已经就绪，包括必要的启动校验和 MySQL 连通性。
-
-API 前缀：
-
-```text
-/api/v1
-```
-
-Market API 前缀：
-
-```text
-/api/v1/market
-```
-
-## 配置
-
-实现应使用显式配置：
-
-- server 地址和端口，默认 `30078`
-- 业务时区，默认 `Asia/Shanghai`
-- MySQL 连接设置
-- 用于同步 API 的 Admin Token
-- market provider，`mock` 或 `tushare`
-- 使用 Tushare provider 时的 Tushare token 和 base URL
-- 同步批大小
-- 日志级别
-
-Mock provider 模式可以在没有 Tushare token 的情况下运行。Tushare provider 模式要求提供 Tushare token。
-
-## 主要 API
-
-读取 API：
-
-```text
-GET /api/v1/market/stocks
-GET /api/v1/market/stocks/{symbol}
-GET /api/v1/market/stocks/{symbol}/daily-k-lines
-GET /api/v1/market/stocks/{symbol}/latest-daily-k-line
-GET /api/v1/market/trade-calendars
-GET /api/v1/market/trade-calendars/latest-open-day
-GET /api/v1/market/trade-calendars/is-open
-GET /api/v1/market/meta/enums
-```
-
-同步 API 需要 Admin Token：
-
-```text
-POST /api/v1/market/sync/stocks
-POST /api/v1/market/sync/trade-calendars
-POST /api/v1/market/sync/daily-k-lines
-GET  /api/v1/market/sync/tasks/{task_uid}
-GET  /api/v1/market/sync/tasks/{task_uid}/logs
-```
-
-## 测试
-
-默认测试套件使用快速单元测试：
+启动本地 MySQL：
 
 ```sh
-go test ./...
+make dev-up
 ```
 
-单元测试应优先使用表格驱动写法，并选择最小有用测试范围。
-
-依赖 `gomonkey` 的测试可能需要关闭内联：
+执行数据库迁移：
 
 ```sh
-go test ./... -gcflags=all="-N -l"
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' make migrate-up
 ```
 
-除非特定测试流程确实需要 monkey patch，否则默认测试运行不要关闭内联。
+启动服务：
 
-Repository 集成测试添加后，应使用 `integration` build tag。
+```sh
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' \
+ADMIN_TOKEN='local-admin-token' \
+make run
+```
 
-## 文档
+默认 HTTP 端口是 `30078`。
 
-英文文档是事实来源。`zh/` 目录下的中文文档是翻译镜像；对应英文文档变更时应同步更新。
+## API 与配置
 
-关键文档：
+- 健康检查：`GET /healthz`
+- 就绪检查：`GET /readyz`
+- Market API 前缀：`/api/v1/market`
+- OpenAPI 契约：`specs/openapi.yaml`
+- 默认配置：`configs/config.yaml`
+- 测试配置：`configs/config.test.yaml`
 
-- `specs/phase1-strategy.md`
-- `specs/api-contract-decisions.md`
-- `specs/phase1-table-structure.md`
-- `specs/sync-task-behavior.md`
-- `specs/provider-tushare-adapter.md`
-- `specs/runtime-and-testing.md`
-- `specs/implementation-plan.md`
-- `docs/git-conventions.md`
-- `domain/market/INDEX.md`
+需要 Admin Token 的同步 API 使用：
+
+```text
+Authorization: Bearer <admin-token>
+```
+
+## 验证
+
+运行单元测试：
+
+```sh
+make test
+```
+
+运行格式检查和 vet：
+
+```sh
+make fmt-check
+make vet
+```
+
+在真实 MySQL 数据库完成迁移后运行集成测试：
+
+```sh
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' make test-integration
+```

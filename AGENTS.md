@@ -19,3 +19,9 @@ The root `README.md` is user-facing Chinese documentation. Models and automation
 Use the root `INDEX.md` as the model-facing project entry point.
 
 When modifying the root `INDEX.md`, update the root `README.md` in the same change so user-facing documentation stays aligned.
+
+## Code Style
+
+Prefer extracting cohesive helper functions over writing large functions. Keep functions focused on one responsibility, and split complex control flow into named functions when doing so improves readability and testability.
+
+Add code comments in Chinese. Comments should explain non-obvious intent, constraints, or domain rules; avoid comments that merely repeat what the code already says.

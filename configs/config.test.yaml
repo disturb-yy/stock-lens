@@ -1,0 +1,22 @@
+server:
+  addr: "127.0.0.1"
+  port: 30078
+  timezone: "Asia/Shanghai"
+
+database:
+  driver: "mysql"
+  dsn: "test:test@tcp(127.0.0.1:3306)/stock_lens_test?parseTime=true&loc=Asia%2FShanghai"
+
+auth:
+  admin_token: "test-admin-token"
+
+market:
+  provider: "mock"
+  batch_size: 500
+
+tushare:
+  base_url: "https://api.tushare.pro"
+  token: ""
+
+log:
+  level: "debug"

@@ -46,6 +46,7 @@ When a sync task conflicts with an active task, `data` may include the active ta
 | `MARKET_INVALID_ASSET_TYPE` | 400 | Asset type is not supported in Phase 1; only `STOCK` is accepted |
 | `MARKET_INVALID_EXCHANGE` | 400 | Exchange is not one of `SSE`, `SZSE`, or `BSE` |
 | `MARKET_INVALID_STATUS` | 400 | Stock status is not one of `LISTED`, `DELISTED`, or `PAUSED` |
+| `MARKET_INVALID_PAGE_SIZE` | 400 | Pagination input is invalid, such as `page_size` greater than 100 |
 | `MARKET_INVALID_DATE_RANGE` | 400 | `start_date` is later than `end_date` |
 | `MARKET_DATE_RANGE_TOO_LARGE` | 400 | Query or sync date range exceeds the allowed maximum |
 | `MARKET_INVALID_TASK_STATUS` | 400 | Task or log status filter is invalid |
