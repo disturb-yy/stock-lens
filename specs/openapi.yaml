@@ -239,6 +239,7 @@ paths:
     post:
       tags: [sync]
       summary: 创建股票主数据同步任务
+      description: "需要在请求头中提供 `Authorization: Bearer <admin-token>`。"
       security:
         - adminToken: []
       requestBody:
@@ -258,6 +259,7 @@ paths:
     post:
       tags: [sync]
       summary: 创建交易日历同步任务
+      description: "需要在请求头中提供 `Authorization: Bearer <admin-token>`。"
       security:
         - adminToken: []
       requestBody:
@@ -279,6 +281,7 @@ paths:
     post:
       tags: [sync]
       summary: 创建日 K 同步任务
+      description: "需要在请求头中提供 `Authorization: Bearer <admin-token>`。"
       security:
         - adminToken: []
       requestBody:
@@ -374,6 +377,7 @@ components:
     adminToken:
       type: http
       scheme: bearer
+      description: "Admin Token 认证。受保护的同步创建接口必须传入 `Authorization: Bearer <admin-token>`。"
   parameters:
     Page:
       name: page
