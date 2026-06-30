@@ -1,35 +1,38 @@
 openapi: 3.1.0
 info:
-  title: Stock Lens Phase 1 API
+  title: Stock Lens 第一阶段 API
   version: 0.1.0
-  description: Market-data sync and query API for Stock Lens Phase 1.
+  description: Stock Lens 第一阶段行情数据同步与查询 API。
 servers:
   - url: http://localhost:30078
 tags:
   - name: health
+    description: 健康检查与就绪检查。
   - name: market
+    description: 股票、日 K、交易日历和枚举查询。
   - name: sync
+    description: 行情数据同步任务与同步日志。
 paths:
   /healthz:
     get:
       tags: [health]
-      summary: Liveness check
+      summary: 存活检查
       responses:
         "200":
-          description: Process is alive.
+          description: 进程存活。
   /readyz:
     get:
       tags: [health]
-      summary: Readiness check
+      summary: 就绪检查
       responses:
         "200":
-          description: Service is ready.
+          description: 服务已就绪。
         "503":
-          description: Service is not ready.
+          description: 服务未就绪。
   /api/v1/market/stocks:
     get:
       tags: [market]
-      summary: List stocks
+      summary: 查询股票列表
       parameters:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
@@ -49,7 +52,7 @@ paths:
         - $ref: "#/components/parameters/AssetType"
       responses:
         "200":
-          description: Stock list.
+          description: 股票列表。
           content:
             application/json:
               schema:
@@ -64,14 +67,14 @@ paths:
   /api/v1/market/stocks/{symbol}:
     get:
       tags: [market]
-      summary: Get stock detail
+      summary: 查询股票详情
       parameters:
         - $ref: "#/components/parameters/Symbol"
         - $ref: "#/components/parameters/Market"
         - $ref: "#/components/parameters/AssetType"
       responses:
         "200":
-          description: Stock detail.
+          description: 股票详情。
           content:
             application/json:
               schema:
@@ -86,7 +89,7 @@ paths:
   /api/v1/market/stocks/{symbol}/daily-k-lines:
     get:
       tags: [market]
-      summary: List daily K lines
+      summary: 查询日 K 列表
       parameters:
         - $ref: "#/components/parameters/Symbol"
         - $ref: "#/components/parameters/StartDate"
@@ -95,7 +98,7 @@ paths:
         - $ref: "#/components/parameters/AssetType"
       responses:
         "200":
-          description: Daily K line array.
+          description: 日 K 数据列表。
           content:
             application/json:
               schema:
@@ -114,14 +117,14 @@ paths:
   /api/v1/market/stocks/{symbol}/latest-daily-k-line:
     get:
       tags: [market]
-      summary: Get latest daily K line
+      summary: 查询最新日 K
       parameters:
         - $ref: "#/components/parameters/Symbol"
         - $ref: "#/components/parameters/Market"
         - $ref: "#/components/parameters/AssetType"
       responses:
         "200":
-          description: Latest daily K line, or null when unavailable.
+          description: 最新日 K；没有数据时返回 null。
           content:
             application/json:
               schema:
@@ -138,7 +141,7 @@ paths:
   /api/v1/market/trade-calendars:
     get:
       tags: [market]
-      summary: List trade calendars
+      summary: 查询交易日历
       parameters:
         - $ref: "#/components/parameters/StartDate"
         - $ref: "#/components/parameters/EndDate"
@@ -149,7 +152,7 @@ paths:
             $ref: "#/components/schemas/Exchange"
       responses:
         "200":
-          description: Trade calendar rows.
+          description: 交易日历记录。
           content:
             application/json:
               schema:
@@ -166,7 +169,7 @@ paths:
   /api/v1/market/trade-calendars/latest-open-day:
     get:
       tags: [market]
-      summary: Get latest open trading day
+      summary: 查询最近开市日
       parameters:
         - $ref: "#/components/parameters/Market"
         - name: exchange
@@ -175,7 +178,7 @@ paths:
             $ref: "#/components/schemas/Exchange"
       responses:
         "200":
-          description: Latest open day.
+          description: 最近开市日。
           content:
             application/json:
               schema:
@@ -190,7 +193,7 @@ paths:
   /api/v1/market/trade-calendars/is-open:
     get:
       tags: [market]
-      summary: Check whether a date is open
+      summary: 判断指定日期是否开市
       parameters:
         - name: date
           in: query
@@ -204,7 +207,7 @@ paths:
             $ref: "#/components/schemas/Exchange"
       responses:
         "200":
-          description: Open-day status.
+          description: 开市状态。
           content:
             application/json:
               schema:
@@ -219,10 +222,10 @@ paths:
   /api/v1/market/meta/enums:
     get:
       tags: [market]
-      summary: Get enum metadata
+      summary: 查询枚举元数据
       responses:
         "200":
-          description: Enum metadata.
+          description: 枚举元数据。
           content:
             application/json:
               schema:
@@ -235,7 +238,7 @@ paths:
   /api/v1/market/sync/stocks:
     post:
       tags: [sync]
-      summary: Create stock master sync task
+      summary: 创建股票主数据同步任务
       security:
         - adminToken: []
       requestBody:
@@ -254,7 +257,7 @@ paths:
   /api/v1/market/sync/trade-calendars:
     post:
       tags: [sync]
-      summary: Create trade-calendar sync task
+      summary: 创建交易日历同步任务
       security:
         - adminToken: []
       requestBody:
@@ -275,7 +278,7 @@ paths:
   /api/v1/market/sync/daily-k-lines:
     post:
       tags: [sync]
-      summary: Create daily K line sync task
+      summary: 创建日 K 同步任务
       security:
         - adminToken: []
       requestBody:
@@ -296,7 +299,7 @@ paths:
   /api/v1/market/sync/tasks:
     get:
       tags: [sync]
-      summary: List sync tasks
+      summary: 查询同步任务列表
       parameters:
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
@@ -306,7 +309,7 @@ paths:
             $ref: "#/components/schemas/SyncTaskStatus"
       responses:
         "200":
-          description: Sync task list.
+          description: 同步任务列表。
           content:
             application/json:
               schema:
@@ -319,12 +322,12 @@ paths:
   /api/v1/market/sync/tasks/{task_uid}:
     get:
       tags: [sync]
-      summary: Get sync task
+      summary: 查询同步任务详情
       parameters:
         - $ref: "#/components/parameters/TaskUID"
       responses:
         "200":
-          description: Sync task detail.
+          description: 同步任务详情。
           content:
             application/json:
               schema:
@@ -339,7 +342,7 @@ paths:
   /api/v1/market/sync/tasks/{task_uid}/logs:
     get:
       tags: [sync]
-      summary: List sync task logs
+      summary: 查询同步任务日志
       parameters:
         - $ref: "#/components/parameters/TaskUID"
         - $ref: "#/components/parameters/Page"
@@ -354,7 +357,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Sync log list.
+          description: 同步日志列表。
           content:
             application/json:
               schema:
@@ -426,13 +429,13 @@ components:
         format: date
   responses:
     Error:
-      description: Error response.
+      description: 错误响应。
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Envelope"
     SyncTaskCreated:
-      description: Sync task created.
+      description: 同步任务已创建。
       content:
         application/json:
           schema:
