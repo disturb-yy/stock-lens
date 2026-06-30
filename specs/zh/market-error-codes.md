@@ -46,6 +46,7 @@
 | `MARKET_INVALID_ASSET_TYPE` | 400 | 第一阶段不支持该 asset type；只接受 `STOCK` |
 | `MARKET_INVALID_EXCHANGE` | 400 | Exchange 不是 `SSE`、`SZSE` 或 `BSE` |
 | `MARKET_INVALID_STATUS` | 400 | Stock status 不是 `LISTED`、`DELISTED` 或 `PAUSED` |
+| `MARKET_INVALID_PAGE_SIZE` | 400 | 分页输入无效，例如 `page_size` 大于 100 |
 | `MARKET_INVALID_DATE_RANGE` | 400 | `start_date` 晚于 `end_date` |
 | `MARKET_DATE_RANGE_TOO_LARGE` | 400 | 查询或同步日期范围超过允许的最大值 |
 | `MARKET_INVALID_TASK_STATUS` | 400 | Task 或 log status 过滤条件无效 |

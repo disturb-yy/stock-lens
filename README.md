@@ -60,6 +60,34 @@ Market API 前缀：
 
 Mock provider 模式可以在没有 Tushare token 的情况下运行。Tushare provider 模式要求提供 Tushare token。
 
+## 本地运行
+
+启动本地 MySQL：
+
+```sh
+make dev-up
+```
+
+执行数据库迁移：
+
+```sh
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' make migrate-up
+```
+
+启动服务：
+
+```sh
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' \
+ADMIN_TOKEN='local-admin-token' \
+make run
+```
+
+OpenAPI 契约位于：
+
+```text
+specs/openapi.yaml
+```
+
 ## 主要 API
 
 读取 API：
@@ -90,7 +118,7 @@ GET  /api/v1/market/sync/tasks/{task_uid}/logs
 默认测试套件使用快速单元测试：
 
 ```sh
-go test ./...
+make test
 ```
 
 单元测试应优先使用表格驱动写法，并选择最小有用测试范围。
@@ -104,6 +132,19 @@ go test ./... -gcflags=all="-N -l"
 除非特定测试流程确实需要 monkey patch，否则默认测试运行不要关闭内联。
 
 Repository 集成测试添加后，应使用 `integration` build tag。
+
+在完成本地 MySQL migration 后运行集成测试：
+
+```sh
+MYSQL_DSN='stock_lens:stock_lens@tcp(127.0.0.1:33306)/stock_lens?parseTime=true&loc=Asia%2FShanghai' make test-integration
+```
+
+格式检查和 vet：
+
+```sh
+make fmt-check
+make vet
+```
 
 ## 文档
 

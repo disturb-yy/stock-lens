@@ -1,0 +1,796 @@
+openapi: 3.1.0
+info:
+  title: Stock Lens Phase 1 API
+  version: 0.1.0
+  description: Market-data sync and query API for Stock Lens Phase 1.
+servers:
+  - url: http://localhost:30078
+tags:
+  - name: health
+  - name: market
+  - name: sync
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      summary: Liveness check
+      responses:
+        "200":
+          description: Process is alive.
+  /readyz:
+    get:
+      tags: [health]
+      summary: Readiness check
+      responses:
+        "200":
+          description: Service is ready.
+        "503":
+          description: Service is not ready.
+  /api/v1/market/stocks:
+    get:
+      tags: [market]
+      summary: List stocks
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: exchange
+          in: query
+          schema:
+            $ref: "#/components/schemas/Exchange"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/StockStatus"
+        - $ref: "#/components/parameters/Market"
+        - $ref: "#/components/parameters/AssetType"
+      responses:
+        "200":
+          description: Stock list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/StockList"
+        "400":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/stocks/{symbol}:
+    get:
+      tags: [market]
+      summary: Get stock detail
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - $ref: "#/components/parameters/Market"
+        - $ref: "#/components/parameters/AssetType"
+      responses:
+        "200":
+          description: Stock detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/StockDetail"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/stocks/{symbol}/daily-k-lines:
+    get:
+      tags: [market]
+      summary: List daily K lines
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/Market"
+        - $ref: "#/components/parameters/AssetType"
+      responses:
+        "200":
+          description: Daily K line array.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/DailyKLine"
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/stocks/{symbol}/latest-daily-k-line:
+    get:
+      tags: [market]
+      summary: Get latest daily K line
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - $ref: "#/components/parameters/Market"
+        - $ref: "#/components/parameters/AssetType"
+      responses:
+        "200":
+          description: Latest daily K line, or null when unavailable.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        oneOf:
+                          - $ref: "#/components/schemas/DailyKLine"
+                          - type: "null"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/trade-calendars:
+    get:
+      tags: [market]
+      summary: List trade calendars
+      parameters:
+        - $ref: "#/components/parameters/StartDate"
+        - $ref: "#/components/parameters/EndDate"
+        - $ref: "#/components/parameters/Market"
+        - name: exchange
+          in: query
+          schema:
+            $ref: "#/components/schemas/Exchange"
+      responses:
+        "200":
+          description: Trade calendar rows.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/TradeCalendar"
+        "400":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/trade-calendars/latest-open-day:
+    get:
+      tags: [market]
+      summary: Get latest open trading day
+      parameters:
+        - $ref: "#/components/parameters/Market"
+        - name: exchange
+          in: query
+          schema:
+            $ref: "#/components/schemas/Exchange"
+      responses:
+        "200":
+          description: Latest open day.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/LatestOpenDay"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/trade-calendars/is-open:
+    get:
+      tags: [market]
+      summary: Check whether a date is open
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/Market"
+        - name: exchange
+          in: query
+          schema:
+            $ref: "#/components/schemas/Exchange"
+      responses:
+        "200":
+          description: Open-day status.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/IsOpenDay"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/meta/enums:
+    get:
+      tags: [market]
+      summary: Get enum metadata
+      responses:
+        "200":
+          description: Enum metadata.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/EnumMetadata"
+  /api/v1/market/sync/stocks:
+    post:
+      tags: [sync]
+      summary: Create stock master sync task
+      security:
+        - adminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncStocksRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/SyncTaskCreated"
+        "401":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/sync/trade-calendars:
+    post:
+      tags: [sync]
+      summary: Create trade-calendar sync task
+      security:
+        - adminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncTradeCalendarsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/SyncTaskCreated"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/sync/daily-k-lines:
+    post:
+      tags: [sync]
+      summary: Create daily K line sync task
+      security:
+        - adminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncDailyKLinesRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/SyncTaskCreated"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/sync/tasks:
+    get:
+      tags: [sync]
+      summary: List sync tasks
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/SyncTaskStatus"
+      responses:
+        "200":
+          description: Sync task list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SyncTaskList"
+  /api/v1/market/sync/tasks/{task_uid}:
+    get:
+      tags: [sync]
+      summary: Get sync task
+      parameters:
+        - $ref: "#/components/parameters/TaskUID"
+      responses:
+        "200":
+          description: Sync task detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SyncTask"
+        "404":
+          $ref: "#/components/responses/Error"
+  /api/v1/market/sync/tasks/{task_uid}/logs:
+    get:
+      tags: [sync]
+      summary: List sync task logs
+      parameters:
+        - $ref: "#/components/parameters/TaskUID"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/SyncLogStatus"
+        - name: symbol
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sync log list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SyncLogList"
+        "404":
+          $ref: "#/components/responses/Error"
+components:
+  securitySchemes:
+    adminToken:
+      type: http
+      scheme: bearer
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Market:
+      name: market
+      in: query
+      schema:
+        $ref: "#/components/schemas/Market"
+    AssetType:
+      name: asset_type
+      in: query
+      schema:
+        $ref: "#/components/schemas/AssetType"
+    Symbol:
+      name: symbol
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[0-9]{6}$"
+    TaskUID:
+      name: task_uid
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 26
+        maxLength: 26
+    StartDate:
+      name: start_date
+      in: query
+      schema:
+        type: string
+        format: date
+    EndDate:
+      name: end_date
+      in: query
+      schema:
+        type: string
+        format: date
+  responses:
+    Error:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Envelope"
+    SyncTaskCreated:
+      description: Sync task created.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Envelope"
+              - type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SyncTaskCreation"
+  schemas:
+    Envelope:
+      type: object
+      required: [code, message, request_id, data]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        request_id:
+          type: string
+        data: {}
+    Pagination:
+      type: object
+      required: [page, page_size, total, total_pages]
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+    Market:
+      type: string
+      enum: [CN]
+      default: CN
+    AssetType:
+      type: string
+      enum: [STOCK]
+      default: STOCK
+    Exchange:
+      type: string
+      enum: [SSE, SZSE, BSE]
+      default: SSE
+    Board:
+      type: string
+      enum: [MAIN, GEM, STAR, BSE, UNKNOWN]
+    StockStatus:
+      type: string
+      enum: [LISTED, DELISTED, PAUSED]
+    DataSource:
+      type: string
+      enum: [TUSHARE, MOCK]
+    SyncTaskType:
+      type: string
+      enum: [SYNC_STOCK_MASTER, SYNC_TRADE_CALENDARS, SYNC_DAILY_K_LINES]
+    SyncTaskStatus:
+      type: string
+      enum: [PENDING, RUNNING, SUCCESS, FAILED, PARTIAL_SUCCESS]
+    SyncLogStatus:
+      type: string
+      enum: [SUCCESS, FAILED, WARNING]
+    Stock:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+        exchange:
+          $ref: "#/components/schemas/Exchange"
+        board:
+          $ref: "#/components/schemas/Board"
+        area:
+          type: string
+        industry:
+          type: string
+        status:
+          $ref: "#/components/schemas/StockStatus"
+        list_date:
+          type: [string, "null"]
+          format: date
+        delist_date:
+          type: [string, "null"]
+          format: date
+        data_source:
+          $ref: "#/components/schemas/DataSource"
+        synced_at:
+          type: string
+          format: date-time
+    StockDetail:
+      allOf:
+        - $ref: "#/components/schemas/Stock"
+        - type: object
+          properties:
+            latest_daily_k_line:
+              oneOf:
+                - $ref: "#/components/schemas/DailyKLine"
+                - type: "null"
+    StockList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Stock"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    DailyKLine:
+      type: object
+      properties:
+        symbol:
+          type: string
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+        trade_date:
+          type: string
+          format: date
+        open:
+          type: string
+        high:
+          type: string
+        low:
+          type: string
+        close:
+          type: string
+        pre_close:
+          type: string
+        change:
+          type: string
+        pct_change:
+          type: string
+        pct_change_unit:
+          type: string
+          enum: [percent]
+        volume:
+          type: string
+        volume_unit:
+          type: string
+          enum: [lot]
+        amount:
+          type: string
+        amount_unit:
+          type: string
+          enum: [thousand_cny]
+        data_source:
+          $ref: "#/components/schemas/DataSource"
+        synced_at:
+          type: string
+          format: date-time
+    TradeCalendar:
+      type: object
+      properties:
+        market:
+          $ref: "#/components/schemas/Market"
+        exchange:
+          $ref: "#/components/schemas/Exchange"
+        cal_date:
+          type: string
+          format: date
+        is_open:
+          type: boolean
+        pretrade_date:
+          type: [string, "null"]
+          format: date
+        data_source:
+          $ref: "#/components/schemas/DataSource"
+        synced_at:
+          type: string
+          format: date-time
+    LatestOpenDay:
+      type: object
+      properties:
+        market:
+          $ref: "#/components/schemas/Market"
+        exchange:
+          $ref: "#/components/schemas/Exchange"
+        date:
+          type: string
+          format: date
+    IsOpenDay:
+      allOf:
+        - $ref: "#/components/schemas/LatestOpenDay"
+        - type: object
+          properties:
+            is_open:
+              type: boolean
+            pretrade_date:
+              type: [string, "null"]
+              format: date
+    EnumMetadata:
+      type: object
+      properties:
+        markets:
+          type: array
+          items:
+            type: string
+        asset_types:
+          type: array
+          items:
+            type: string
+        exchanges:
+          type: array
+          items:
+            type: string
+        boards:
+          type: array
+          items:
+            type: string
+        stock_statuses:
+          type: array
+          items:
+            type: string
+        data_sources:
+          type: array
+          items:
+            type: string
+        sync_task_types:
+          type: array
+          items:
+            type: string
+        sync_task_statuses:
+          type: array
+          items:
+            type: string
+    SyncTaskCreation:
+      type: object
+      properties:
+        task_uid:
+          type: string
+        status:
+          $ref: "#/components/schemas/SyncTaskStatus"
+    SyncTask:
+      type: object
+      properties:
+        task_uid:
+          type: string
+        task_type:
+          $ref: "#/components/schemas/SyncTaskType"
+        status:
+          $ref: "#/components/schemas/SyncTaskStatus"
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+        data_source:
+          $ref: "#/components/schemas/DataSource"
+        total_items:
+          type: integer
+          format: int64
+        processed_items:
+          type: integer
+          format: int64
+        success_items:
+          type: integer
+          format: int64
+        failed_items:
+          type: integer
+          format: int64
+        request_id:
+          type: string
+        started_at:
+          type: [string, "null"]
+          format: date-time
+        finished_at:
+          type: [string, "null"]
+          format: date-time
+        error_msg:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    SyncTaskList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncTask"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    SyncLog:
+      type: object
+      properties:
+        task_uid:
+          type: string
+        step:
+          type: string
+        status:
+          $ref: "#/components/schemas/SyncLogStatus"
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+        symbol:
+          type: string
+        data_source:
+          $ref: "#/components/schemas/DataSource"
+        message:
+          type: string
+        error_detail:
+          type: string
+        affected_rows:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+    SyncLogList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncLog"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    SyncStocksRequest:
+      type: object
+      properties:
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+    SyncTradeCalendarsRequest:
+      type: object
+      required: [start_date, end_date]
+      properties:
+        market:
+          $ref: "#/components/schemas/Market"
+        exchange:
+          $ref: "#/components/schemas/Exchange"
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+    SyncDailyKLinesRequest:
+      type: object
+      properties:
+        market:
+          $ref: "#/components/schemas/Market"
+        asset_type:
+          $ref: "#/components/schemas/AssetType"
+        symbol:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
